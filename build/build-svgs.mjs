@@ -18,8 +18,21 @@ async function processFile(file, config) {
   const filepath = path.join(iconsDir, file)
   const basename = path.basename(file, '.svg')
 
+  // Add the icon's name as the id attribute
+  // to allow it to be referenced via <use>
+  const configWithId = {
+    ...config,
+    plugins: config.plugins.slice()
+  }
+  configWithId.plugins.push({
+    name: "addAttributesToSVGElement",
+    params: {
+      attributes: [{ id: basename }]
+    }
+  })
+
   const originalSvg = await fs.readFile(filepath, 'utf8')
-  const { data: optimizedSvg } = await optimize(originalSvg, { path: filepath, ...config })
+  const { data: optimizedSvg } = await optimize(originalSvg, { path: filepath, ...configWithId })
 
   // svgo will always add a final newline when in pretty mode
   const resultSvg = optimizedSvg.trim()
